@@ -21,7 +21,7 @@ setup(
     name='django-entity-subscription',
     version=get_version(),
     description='Make subscription management easy and entity-based.',
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     url='https://github.com/ambitioninc/django-entity-subscription',
     author='Erik Swanson',
     author_email='opensource@ambition.com',
