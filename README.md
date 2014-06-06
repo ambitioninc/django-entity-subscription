@@ -1,4 +1,6 @@
+Django Entity Subscription
+==================================================
 
-entity_subscription
-==================
-I have failed to provide a good README.md in my project, and you should shun me if I do any pull requests
+Django Entity Subscription uses the power of the Django-Entity
+framework to make managing subscriptions easy and powerful, for you
+and your users.
