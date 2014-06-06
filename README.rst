@@ -76,6 +76,41 @@ description.
 Mediums
 ``````````````````````````````````````````````````
 
+From a user of your application's perspective a "medium" is a way in
+which they can be notified. Your site may support a variety of
+differenty mediums for notifying your users of different
+happenings. Examples could include Email, Text Messages, a News-Feed,
+or a In-site Notification center.
+
+Users will likely want to recieve notifications through some
+combination of the available mediums, but only for certain categories
+of notifications. They may want some notifications that they view as
+somewhat important to go to their email, notifications that are very
+important to go to email and text-message, and all the rest to go to
+an in-site notification center. By distinguishing between mediums in a
+subscription library, users can decide how each "source" of
+notifications is delivered to them.
+
+The pieces of the application that handle actually sending
+notifications will want to own a ``Medium`` object that describes
+them, or at least know the unique name of one. This enables the code
+sending notifications to handle subscriptions appropriately.
+
+As with sources, The actual medium objects in the database are fairly
+simple, and are created through the standard ``objects.create``
+interface. They have a unique identifier, a user friendly display
+name, and a longer form description.
+
+.. code:: Python
+
+    from entity_subscription.models import Medium
+
+    Medium.objects.create(
+        name='in_site',
+        display_name='In Site',
+        description='Notifications available in the Accounts/Notifications tab.'
+    )
+
 
 Considerations
 ``````````````````````````````````````````````````
