@@ -18,19 +18,19 @@ def get_version():
 
 
 setup(
-    name='',
+    name='django-entity-subscription',
     version=get_version(),
-    description='',
+    description='Make subscription management easy and entity-based.',
     long_description=open('README.md').read(),
-    url='',
-    author='',
+    url='https://github.com/ambitioninc/django-entity-subscription',
+    author='Erik Swanson',
     author_email='opensource@ambition.com',
     keywords='',
     packages=find_packages(),
     classifiers=[
         'Programming Language :: Python',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Framework :: Django',
     ],
@@ -39,7 +39,6 @@ setup(
         'django>=1.6',
     ],
     tests_require=[
-        'psycopg2',
         'django-nose',
         'south',
         'mock',
