@@ -7,7 +7,7 @@ env:
   matrix:
     - DJANGO=1.6.2
 install:
-  - pip install -q coverage flake8 Django==$DJANGO
+  - pip install -q coverage flake8 psycopg2 Django==$DJANGO
 before_script:
   - flake8 . --max-line-length=120 --max-complexity=10 --exclude='env,migrations,*.egg'
   - psql -c 'CREATE DATABASE entity_subscription;' -U postgres
