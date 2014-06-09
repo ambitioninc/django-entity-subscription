@@ -203,6 +203,8 @@ him from these notifications looks like:
 
     Unsubscribe.objects.create(
         entity = Entity.objects.get_for_obj(Robert)
+        medium = Medium.objects.get(name='in_site')
+        sorce = Source.objects.get(name='new_products')
     )
 
 With this object created, the rest of the group will receive these
