@@ -185,3 +185,40 @@ Unsubscribing
 
 Individual users of your application may wish to remove themselves
 from recieving certain types of notifications.
+
+To unsubscribe an individual from from recieving notifications of a
+given source/medium combination is as simple as creating an
+``Unsubscribe`` object. Assuming that "Robert" was subscribed to New
+Product notifications in the subscription object above, unsubscribing
+him from these notifications looks like:
+
+.. code:: Python
+
+    from my_app.models import MyUser
+
+    from entity.models import Entity
+    from entity_subscription.models import Unsubscribe, Source, Medium
+
+    Robert = MyUser.objects.get(name='Robert')
+
+    Unsubscribe.objects.create(
+        entity = Entity.objects.get_for_obj(Robert)
+    )
+
+With this object created, the rest of the group will recieve these
+notifications still, however "Robert" will no longer see them.
+
+Subscriptions and Unsubscribing Considerations
+``````````````````````````````````````````````````
+
+Separating subscriptions and unsubscriptions into separate tables
+allows for groups of entities to be subscribed with a single object in
+the ``Subscription`` table. This is useful for subscribing large
+groups of users to a notification by default.
+
+If a given notification may only have a few users intersted in
+recieving, it may make more sense for it to be an opt-in notification,
+where a Subscription object is made for each single entity that wishes
+to opt in (that is, a ``Subscription`` object with a
+``subentity_type=None``). This may make more sense then subscribing
+large groups to this notification and having most of them unsubscribe.
