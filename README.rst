@@ -112,7 +112,7 @@ name, and a longer form description.
     )
 
 
-Considerations
+Source and Medium Considerations
 ``````````````````````````````````````````````````
 
 Both ``Source`` and ``Medium`` objects can be effectively used as
@@ -121,3 +121,47 @@ as dynamic records that change as the various sources and mediums for
 notification change. It is important to consider, however, that
 excessively dynamic sources and mediums will make it difficult for
 indifidual entities to control their subscriptions.
+
+
+Subscriptions and Unsubscribing
+--------------------------------------------------
+
+Entities and groups of entities can be subscribed to
+notifications. Once subscribed, individuals, mirrored as entities, can
+choose to unsubscribe from notifications for a given source and
+medium.
+
+
+Subscriptions
+``````````````````````````````````````````````````
+
+This library includes the table ``Subscription``, available from
+``entity_subscription.models.Subscription``. Subscriptions will most
+often be for a group of entities in an applications, where the group
+is subscribed to a source of notifications, through a medium.
+
+Creating a ``Subscription`` object is straigtforward, assuming the
+relevant ``Source`` and ``Medium`` objects have been created (See
+"Sources and Mediums" above), and the entities to be subscribed and
+their group are appropriately mirrored. From there, we can use the
+standard ``objects.create`` interface. Given the sources and mediums
+created above, and a relationship between ``MyUser`` and ``MyGroup``
+in a given application, the following is a subscription for all the
+users in a particular group:
+
+.. code:: Python
+
+    from my_app.models import MyUser
+    from my_app.models import MyGroup
+
+    from django.contrib.contenttypes.models import ContentType
+    from entity.models import Entity
+    from entity_subscription.models import Subscription, Source, Medium
+
+    super_entity = MyGroup.objects.get(name='product_group')
+    Subscription.objects.create(
+        medium = Medium.objects.get(name='in_site'),
+        source = Source.objects.get(name='new_products'),
+        entity = Entity.objects.get_for_obj(super_entity),
+        subentity_type = ContentType.get_for_model(MyUser)
+    )
