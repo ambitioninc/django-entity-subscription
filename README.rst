@@ -135,19 +135,23 @@ medium.
 Subscriptions
 ``````````````````````````````````````````````````
 
-This library includes the table ``Subscription``, available from
-``entity_subscription.models.Subscription``. Subscriptions will most
-often be for a group of entities in an applications, where the group
-is subscribed to a source of notifications, through a medium.
+Subscriptions will most often be created by the application, for an
+entire group of entities. In this case, all the entities will recieve
+the notification, unless they later opt out. Subscriptions can also be
+created for an individual entity to recieve a certain type of
+notificaiton, as an opt-in subscription.
 
-Creating a ``Subscription`` object is straigtforward, assuming the
-relevant ``Source`` and ``Medium`` objects have been created (See
-"Sources and Mediums" above), and the entities to be subscribed and
-their group are appropriately mirrored. From there, we can use the
-standard ``objects.create`` interface. Given the sources and mediums
-created above, and a relationship between ``MyUser`` and ``MyGroup``
-in a given application, the following is a subscription for all the
-users in a particular group:
+This library includes the table ``Subscription``, available from
+``entity_subscription.models.Subscription``. Creating a
+``Subscription`` object is straigtforward, assuming the relevant
+``Source`` and ``Medium`` objects have been created (See "Sources and
+Mediums" above), and the entities to be subscribed and their group are
+appropriately mirrored. From there, we can use the standard
+``objects.create`` interface.
+
+Given the sources and mediums created above, and a relationship
+between ``MyUser`` and ``MyGroup`` in a given application, the
+following is a subscription for all the users in a particular group:
 
 .. code:: Python
 
@@ -165,3 +169,19 @@ users in a particular group:
         entity = Entity.objects.get_for_obj(super_entity),
         subentity_type = ContentType.get_for_model(MyUser)
     )
+
+Each ``Subscritpion`` object stored in the database only subscribes
+the group of entities to a single combitination of a ``Source`` and
+``Medium``. To create subscriptions for delivering notifications from
+the same source over different mediums, a new ``Subscription`` object
+must be created for each source/medium combination.  This allows the
+application developer and the users to have detailed control over what
+the users are notified about, and how those notifications are
+delivered.
+
+
+Unsubscribing
+``````````````````````````````````````````````````
+
+Individual users of your application may wish to remove themselves
+from recieving certain types of notifications.
