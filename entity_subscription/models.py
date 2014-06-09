@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, Q
+from django.db import models
+from django.db.models import Q
 from entity.models import Entity
 
 
@@ -7,14 +8,21 @@ class SubscriptionManager(models.Manager):
     def mediums_subscribed(self, entity, source):
         super_entities = entity.get_super_entities()
         is_entity = Q(subentity_type__isnull=True, entity=entity)
-        in_subentities = Q(subentity_type_=entity.entity_type, entity__in=super_entities)
+        in_subentities = Q(subentity_type=entity.entity_type, entity__in=super_entities)
         subscribed_mediums = set(
-            self.filter(is_entity | in_subentities).values_list('medium', flat=True)
+            self
+            .filter(is_entity | in_subentities, source=source)
+            .select_related('medium')
+            .values_list('medium', flat=True)
         )
         unsubscribed_mediums = set(
-            Unsubscribed.objects.filter(entity=entity, source=source).values_list('medium', flat=True)
+            Unsubscribe.objects
+            .filter(entity=entity, source=source)
+            .select_related('medium')
+            .values_list('medium', flat=True)
         )
-        return subscribed_mediums - unsubscribed_mediums
+        return Medium.objects.filter(id__in=subscribed_mediums - unsubscribed_mediums)
+
 
 class Subscription(models.Model):
     """Include groups of entities to subscriptions.
