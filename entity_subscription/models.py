@@ -14,7 +14,7 @@ class Subscription(models.Model):
     medium = models.ForeignKey('Medium')
     source = models.ForeignKey('Source')
     entity = models.ForeignKey(Entity)
-    subentity_type = models.ForeignKey(ContentType)
+    subentity_type = models.ForeignKey(ContentType, null=True)
 
 
 class Unsubscribe(models.Model):
