@@ -18,7 +18,7 @@ This django app, includes four models:
 - ``Medium``
 - ``Source``
 
-all avaliable from within the package ``entity_subscription.models``.
+all available from within the package ``entity_subscription.models``.
 
 By creating objects in these models, you and the users of your
 application can have fine grained control over how users are notified
@@ -45,7 +45,7 @@ of notifications that they can subscribe to, or unsubscribe from. It
 could be something like "New Products" or "Important Site
 Changes".
 
-For any given source, users may want to recieve notifications over
+For any given source, users may want to receive notifications over
 different mediums (like "Email", "In-site", "text-message"). By
 dividing notifications into different sources, users can choose to
 receive that type of notification over whatever medium they prefer.
@@ -69,7 +69,7 @@ description.
     Source.objects.create(
         name='new_products',
         display_name='New Products',
-        description='Tells you whenver a new item is available in the store.'
+        description='Tells you whenever a new item is available in the store.'
     )
 
 
@@ -78,11 +78,11 @@ Mediums
 
 From a user of your application's perspective a "medium" is a way in
 which they can be notified. Your site may support a variety of
-differenty mediums for notifying your users of different
+different mediums for notifying your users of different
 happenings. Examples could include Email, Text Messages, a News-Feed,
 or a In-site Notification center.
 
-Users will likely want to recieve notifications through some
+Users will likely want to receive notifications through some
 combination of the available mediums, but only for certain categories
 of notifications. They may want some notifications that they view as
 somewhat important to go to their email, notifications that are very
@@ -120,7 +120,7 @@ static records that are setup as initial data for an application, or
 as dynamic records that change as the various sources and mediums for
 notification change. It is important to consider, however, that
 excessively dynamic sources and mediums will make it difficult for
-indifidual entities to control their subscriptions.
+individual entities to control their subscriptions.
 
 
 Subscriptions and Unsubscribing
@@ -136,14 +136,14 @@ Subscriptions
 ``````````````````````````````````````````````````
 
 Subscriptions will most often be created by the application, for an
-entire group of entities. In this case, all the entities will recieve
+entire group of entities. In this case, all the entities will receive
 the notification, unless they later opt out. Subscriptions can also be
-created for an individual entity to recieve a certain type of
-notificaiton, as an opt-in subscription.
+created for an individual entity to receive a certain type of
+notification, as an opt-in subscription.
 
 This library includes the table ``Subscription``, available from
 ``entity_subscription.models.Subscription``. Creating a
-``Subscription`` object is straigtforward, assuming the relevant
+``Subscription`` object is straightforward, assuming the relevant
 ``Source`` and ``Medium`` objects have been created (See "Sources and
 Mediums" above), and the entities to be subscribed and their group are
 appropriately mirrored. From there, we can use the standard
@@ -170,8 +170,8 @@ following is a subscription for all the users in a particular group:
         subentity_type = ContentType.get_for_model(MyUser)
     )
 
-Each ``Subscritpion`` object stored in the database only subscribes
-the group of entities to a single combitination of a ``Source`` and
+Each ``Subscription`` object stored in the database only subscribes
+the group of entities to a single combination of a ``Source`` and
 ``Medium``. To create subscriptions for delivering notifications from
 the same source over different mediums, a new ``Subscription`` object
 must be created for each source/medium combination.  This allows the
@@ -184,9 +184,9 @@ Unsubscribing
 ``````````````````````````````````````````````````
 
 Individual users of your application may wish to remove themselves
-from recieving certain types of notifications.
+from receiving certain types of notifications.
 
-To unsubscribe an individual from from recieving notifications of a
+To unsubscribe an individual from from receiving notifications of a
 given source/medium combination is as simple as creating an
 ``Unsubscribe`` object. Assuming that "Robert" was subscribed to New
 Product notifications in the subscription object above, unsubscribing
@@ -205,7 +205,7 @@ him from these notifications looks like:
         entity = Entity.objects.get_for_obj(Robert)
     )
 
-With this object created, the rest of the group will recieve these
+With this object created, the rest of the group will receive these
 notifications still, however "Robert" will no longer see them.
 
 Subscriptions and Unsubscribing Considerations
@@ -216,8 +216,8 @@ allows for groups of entities to be subscribed with a single object in
 the ``Subscription`` table. This is useful for subscribing large
 groups of users to a notification by default.
 
-If a given notification may only have a few users intersted in
-recieving, it may make more sense for it to be an opt-in notification,
+If a given notification may only have a few users interested in
+receiving, it may make more sense for it to be an opt-in notification,
 where a Subscription object is made for each single entity that wishes
 to opt in (that is, a ``Subscription`` object with a
 ``subentity_type=None``). This may make more sense then subscribing
