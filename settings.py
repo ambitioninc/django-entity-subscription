@@ -41,6 +41,7 @@ def configure_settings():
                 'django.contrib.contenttypes',
                 'django.contrib.sessions',
                 'django.contrib.admin',
+                'entity',
                 'south',
                 'entity_subscription',
                 'entity_subscription.tests',
