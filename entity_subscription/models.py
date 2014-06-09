@@ -10,6 +10,10 @@ class Subscription(models.Model):
     application, as catch-all groups. The finer grained control of
     individual users subscription status is defined within the
     `Unsubscribe` model.
+
+    If, however, you want to subscribe an individual entity to a
+    source/medium combination, setting the `subentity_type` field to
+    None will create an individual subscription.
     """
     medium = models.ForeignKey('Medium')
     source = models.ForeignKey('Source')
