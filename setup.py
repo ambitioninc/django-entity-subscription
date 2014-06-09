@@ -40,6 +40,7 @@ setup(
         'django-entity>=0.4.2',
     ],
     tests_require=[
+        'django-dynamic-fixture',
         'django-nose',
         'south',
         'mock',

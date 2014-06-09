@@ -1,4 +1,5 @@
 import os
+import logging
 
 from django.conf import settings
 
@@ -7,6 +8,7 @@ def configure_settings():
     """
     Configures settings for manage.py and for run_tests.py.
     """
+    logging.disable(logging.CRITICAL)
     if not settings.configured:
         # Determine the database settings depending on if a test_db var is set in CI mode or not
         test_db = os.environ.get('DB', None)
