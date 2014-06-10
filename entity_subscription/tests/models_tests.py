@@ -178,7 +178,15 @@ class SubscriptionManagerIsSubScribedIndividualTest(TestCase):
         )
         self.assertFalse(is_subscribed)
 
-    def test__not_subscribed(self):
+    def test_not_subscribed(self):
+        is_subscribed = Subscription.objects._is_subscribed_individual(
+            self.source_1, self.medium_1, self.entity_1
+        )
+        self.assertFalse(is_subscribed)
+
+    def test_unsubscribed(self):
+        G(Subscription, entity=self.entity_1, medium=self.medium_1, source=self.source_1, subentity_type=None)
+        G(Unsubscribe, entity=self.entity_1, medium=self.medium_1, source=self.source_1)
         is_subscribed = Subscription.objects._is_subscribed_individual(
             self.source_1, self.medium_1, self.entity_1
         )

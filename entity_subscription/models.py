@@ -58,7 +58,12 @@ class SubscriptionManager(models.Manager):
             source=source,
             medium=medium,
         ).exists()
-        return is_subscribed
+        unsubscribed = Unsubscribe.objects.filter(
+            source=source,
+            medium=medium,
+            entity=entity
+        ).exists()
+        return is_subscribed and not unsubscribed
 
     def _is_subscribed_group(self, source, medium, entity, subentity_type):
         related_super_entities = EntityRelationship.objects.filter(
