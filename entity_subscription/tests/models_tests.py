@@ -8,6 +8,8 @@ from entity_subscription.models import Medium, Source, Subscription, Unsubscribe
 
 
 class SubscriptionManagerMediumsSubscribedTest(TestCase):
+    # We just test that this dispatches correctly. We test the
+    # dispatched functions more carefully.
     @patch('entity_subscription.models.SubscriptionManager._mediums_subscribed_individual')
     def test_individual(self, subscribed_mock):
         source = N(Source)
@@ -128,3 +130,56 @@ class SubscriptionManagerMediumsSubscribedGroup(TestCase):
         mediums = Subscription.objects._mediums_subscribed_group(self.source_1, super_3, self.ct)
         self.assertEqual(mediums.count(), 1)
         self.assertEqual(mediums.first(), self.medium_1)
+
+
+class SubscriptionManagerIsSubScribedIndividualTest(TestCase):
+    def setUp(self):
+        self.ct = G(ContentType)
+        self.medium_1 = G(Medium)
+        self.medium_2 = G(Medium)
+        self.source_1 = G(Source)
+        self.source_2 = G(Source)
+        self.entity_1 = G(Entity, entity_type=self.ct)
+        self.entity_2 = G(Entity)
+        G(EntityRelationship, sub_entity=self.entity_1, super_entity=self.entity_2)
+
+    def test_is_subscribed_direct_subscription(self):
+        G(Subscription, entity=self.entity_1, medium=self.medium_1, source=self.source_1, subentity_type=None)
+        is_subscribed = Subscription.objects._is_subscribed_individual(
+            self.source_1, self.medium_1, self.entity_1
+        )
+        self.assertTrue(is_subscribed)
+
+    def test_is_subscribed_group_subscription(self):
+        G(Subscription, entity=self.entity_2, medium=self.medium_1, source=self.source_1, subentity_type=self.ct)
+        is_subscribed = Subscription.objects._is_subscribed_individual(
+            self.source_1, self.medium_1, self.entity_1
+        )
+        self.assertTrue(is_subscribed)
+
+    def test_filters_source(self):
+        G(Subscription, entity=self.entity_1, medium=self.medium_1, source=self.source_2, subentity_type=None)
+        is_subscribed = Subscription.objects._is_subscribed_individual(
+            self.source_1, self.medium_1, self.entity_1
+        )
+        self.assertFalse(is_subscribed)
+
+    def test_filters_medium(self):
+        G(Subscription, entity=self.entity_1, medium=self.medium_2, source=self.source_1, subentity_type=None)
+        is_subscribed = Subscription.objects._is_subscribed_individual(
+            self.source_1, self.medium_1, self.entity_1
+        )
+        self.assertFalse(is_subscribed)
+
+    def test_super_entity_means_not_subscribed(self):
+        G(Subscription, entity=self.entity_1, medium=self.medium_1, source=self.source_1, subentity_type=self.ct)
+        is_subscribed = Subscription.objects._is_subscribed_individual(
+            self.source_1, self.medium_1, self.entity_1
+        )
+        self.assertFalse(is_subscribed)
+
+    def test__not_subscribed(self):
+        is_subscribed = Subscription.objects._is_subscribed_individual(
+            self.source_1, self.medium_1, self.entity_1
+        )
+        self.assertFalse(is_subscribed)
