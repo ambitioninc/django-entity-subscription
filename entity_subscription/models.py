@@ -49,9 +49,16 @@ class SubscriptionManager(models.Manager):
         )
         return Medium.objects.filter(id__in=group_subscribed_mediums)
 
-
     def _is_subscribed_individual(self, source, medium, entity):
-        pass
+        super_entities = entity.get_super_entities()
+        entity_is_subscribed = Q(subentity_type__isnull=True, entity=entity)
+        super_entity_is_subscribed = Q(subentity_type=entity.entity_type, entity__in=super_entities)
+        is_subscribed = self.filter(
+            entity_is_subscribed | super_entity_is_subscribed,
+            source=source,
+            medium=medium,
+        ).exists()
+        return is_subscribed
 
     def _is_subscribed_group(self, source, medium, entity, subentity_type):
         pass
