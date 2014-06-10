@@ -53,18 +53,60 @@ class SubscriptionManagerMediumsSubscribedIndividualTest(TestCase):
         mediums = Subscription.objects._mediums_subscribed_individual(source=self.source_1, entity=entity_1)
         self.assertEqual(mediums.count(), 1)
 
+
 class SubscriptionManagerMediumsSubscribedGroup(TestCase):
     def setUp(self):
-        self.source = G(Source)
-        self.medium = G(Medium)
+        self.ct = G(ContentType)
+        self.source_1 = G(Source)
+        self.source_2 = G(Source)
+        self.medium_1 = G(Medium)
+        self.medium_2 = G(Medium)
 
     def test_one_subscription_matches_across_supers(self):
-        ct = G(ContentType)
         super_1 = G(Entity)
         super_2 = G(Entity)
-        sub = G(Entity, entity_type = ct)
+        sub = G(Entity, entity_type = self.ct)
         G(EntityRelationship, super_entity=super_1, sub_entity=sub)
         G(EntityRelationship, super_entity=super_2, sub_entity=sub)
-        G(Subscription, entity=super_1, medium=self.medium, source=self.source, subentity_type=ct)
-        mediums = Subscription.objects._mediums_subscribed_group(self.source, super_2, ct)
-        self.assertEqual(mediums.first(), self.medium)
+        G(Subscription, entity=super_1, medium=self.medium_1, source=self.source_1, subentity_type=self.ct)
+        mediums = Subscription.objects._mediums_subscribed_group(self.source_1, super_2, self.ct)
+        self.assertEqual(mediums.count(), 1)
+        self.assertEqual(mediums.first(), self.medium_1)
+
+    def test_multiple_subscriptions_match_acorss_supers(self):
+        super_1 = G(Entity)
+        super_2 = G(Entity)
+        super_3 = G(Entity)
+        sub = G(Entity, entity_type = self.ct)
+        G(EntityRelationship, super_entity=super_1, sub_entity=sub)
+        G(EntityRelationship, super_entity=super_2, sub_entity=sub)
+        G(EntityRelationship, super_entity=super_3, sub_entity=sub)
+        G(Subscription, entity=super_1, medium=self.medium_1, source=self.source_1, subentity_type=self.ct)
+        G(Subscription, entity=super_2, medium=self.medium_2, source=self.source_1, subentity_type=self.ct)
+        mediums = Subscription.objects._mediums_subscribed_group(self.source_1, super_3, self.ct)
+        self.assertEqual(mediums.count(), 2)
+
+    def test_filters_by_source(self):
+        super_1 = G(Entity)
+        super_2 = G(Entity)
+        sub = G(Entity, entity_type = self.ct)
+        G(EntityRelationship, super_entity=super_1, sub_entity=sub)
+        G(EntityRelationship, super_entity=super_2, sub_entity=sub)
+        G(Subscription, entity=super_1, medium=self.medium_1, source=self.source_1, subentity_type=self.ct)
+        G(Subscription, entity=super_1, medium=self.medium_2, source=self.source_2, subentity_type=self.ct)
+        mediums = Subscription.objects._mediums_subscribed_group(self.source_1, super_2, self.ct)
+        self.assertEqual(mediums.count(), 1)
+        self.assertEqual(mediums.first(), self.medium_1)
+
+    def test_filters_by_super_entity_intersections(self):
+        super_1 = G(Entity)
+        super_2 = G(Entity)
+        super_3 = G(Entity)
+        sub = G(Entity, entity_type = self.ct)
+        G(EntityRelationship, super_entity=super_1, sub_entity=sub)
+        G(EntityRelationship, super_entity=super_3, sub_entity=sub)
+        G(Subscription, entity=super_1, medium=self.medium_1, source=self.source_1, subentity_type=self.ct)
+        G(Subscription, entity=super_2, medium=self.medium_2, source=self.source_1, subentity_type=self.ct)
+        mediums = Subscription.objects._mediums_subscribed_group(self.source_1, super_3, self.ct)
+        self.assertEqual(mediums.count(), 1)
+        self.assertEqual(mediums.first(), self.medium_1)
