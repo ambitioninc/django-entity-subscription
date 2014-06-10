@@ -52,3 +52,19 @@ class SubscriptionManagerMediumsSubscribedIndividualTest(TestCase):
         G(Subscription, entity=entity_1, medium=self.medium_2, source=self.source_2, subentity_type=None)
         mediums = Subscription.objects._mediums_subscribed_individual(source=self.source_1, entity=entity_1)
         self.assertEqual(mediums.count(), 1)
+
+class SubscriptionManagerMediumsSubscribedGroup(TestCase):
+    def setUp(self):
+        self.source = G(Source)
+        self.medium = G(Medium)
+
+    def test_one_subscription_matches_across_supers(self):
+        ct = G(ContentType)
+        super_1 = G(Entity)
+        super_2 = G(Entity)
+        sub = G(Entity, entity_type = ct)
+        G(EntityRelationship, super_entity=super_1, sub_entity=sub)
+        G(EntityRelationship, super_entity=super_2, sub_entity=sub)
+        G(Subscription, entity=super_1, medium=self.medium, source=self.source, subentity_type=ct)
+        mediums = Subscription.objects._mediums_subscribed_group(self.source, super_2, ct)
+        self.assertEqual(mediums.first(), self.medium)

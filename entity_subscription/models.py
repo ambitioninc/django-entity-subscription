@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
-from entity.models import Entity
+from entity import Entity, EntityRelationship
 
 
 class SubscriptionManager(models.Manager):
@@ -39,7 +39,7 @@ class SubscriptionManager(models.Manager):
         # For every subentity, if that subentity is part of a
         # subscription, include the medium for that subscription.
         related_super_entities = EntityRelationship.objects.filter(
-            sub_entity__in=entity.get_sub_entities(subentity_type)
+            sub_entity__in=entity.get_sub_entities().is_type(subentity_type)
         ).values_list('super_entity')
         group_subscribed_mediums = set(
             self
