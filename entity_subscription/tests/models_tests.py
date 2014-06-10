@@ -6,7 +6,7 @@ from entity.models import Entity, EntityRelationship
 from entity_subscription.models import Medium, Source, Subscription, Unsubscribe
 
 
-class SubscriptionManagerMediumsSubscribedTest(TestCase):
+class SubscriptionManagerMediumsSubscribedIndividualTest(TestCase):
     def setUp(self):
         self.medium_1 = G(Medium)
         self.medium_2 = G(Medium)
@@ -16,7 +16,7 @@ class SubscriptionManagerMediumsSubscribedTest(TestCase):
     def test_individual_subscription(self):
         entity_1 = G(Entity)
         G(Subscription, entity=entity_1, medium=self.medium_1, source=self.source_1, subentity_type=None)
-        mediums = Subscription.objects.mediums_subscribed(source=self.source_1, entity=entity_1)
+        mediums = Subscription.objects._mediums_subscribed_individual(source=self.source_1, entity=entity_1)
         expected_medium = self.medium_1
         self.assertEqual(mediums.first(), expected_medium)
 
@@ -26,7 +26,7 @@ class SubscriptionManagerMediumsSubscribedTest(TestCase):
         sub_e = G(Entity, entity_type=ct)
         G(EntityRelationship, super_entity=super_e, sub_entity=sub_e)
         G(Subscription, entity=super_e, medium=self.medium_1, source=self.source_1, subentity_type=ct)
-        mediums = Subscription.objects.mediums_subscribed(source=self.source_1, entity=sub_e)
+        mediums = Subscription.objects._mediums_subscribed_individual(source=self.source_1, entity=sub_e)
         expected_medium = self.medium_1
         self.assertEqual(mediums.first(), expected_medium)
 
@@ -34,7 +34,7 @@ class SubscriptionManagerMediumsSubscribedTest(TestCase):
         entity_1 = G(Entity)
         G(Subscription, entity=entity_1, medium=self.medium_1, source=self.source_1, subentity_type=None)
         G(Subscription, entity=entity_1, medium=self.medium_2, source=self.source_1, subentity_type=None)
-        mediums = Subscription.objects.mediums_subscribed(source=self.source_1, entity=entity_1)
+        mediums = Subscription.objects._mediums_subscribed_individual(source=self.source_1, entity=entity_1)
         self.assertEqual(mediums.count(), 2)
 
     def test_unsubscribed(self):
@@ -42,7 +42,7 @@ class SubscriptionManagerMediumsSubscribedTest(TestCase):
         G(Subscription, entity=entity_1, medium=self.medium_1, source=self.source_1, subentity_type=None)
         G(Subscription, entity=entity_1, medium=self.medium_2, source=self.source_1, subentity_type=None)
         G(Unsubscribe, entity=entity_1, medium=self.medium_1, source=self.source_1)
-        mediums = Subscription.objects.mediums_subscribed(source=self.source_1, entity=entity_1)
+        mediums = Subscription.objects._mediums_subscribed_individual(source=self.source_1, entity=entity_1)
         self.assertEqual(mediums.count(), 1)
         self.assertEqual(mediums.first(), self.medium_2)
 
@@ -50,5 +50,5 @@ class SubscriptionManagerMediumsSubscribedTest(TestCase):
         entity_1 = G(Entity)
         G(Subscription, entity=entity_1, medium=self.medium_1, source=self.source_1, subentity_type=None)
         G(Subscription, entity=entity_1, medium=self.medium_2, source=self.source_2, subentity_type=None)
-        mediums = Subscription.objects.mediums_subscribed(source=self.source_1, entity=entity_1)
+        mediums = Subscription.objects._mediums_subscribed_individual(source=self.source_1, entity=entity_1)
         self.assertEqual(mediums.count(), 1)
