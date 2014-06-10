@@ -5,7 +5,7 @@ from entity.models import Entity
 
 
 class SubscriptionManager(models.Manager):
-    def mediums_subscribed(self, entity, source):
+    def mediums_subscribed(self, source, entity):
         super_entities = entity.get_super_entities()
         is_entity = Q(subentity_type__isnull=True, entity=entity)
         in_subentities = Q(subentity_type=entity.entity_type, entity__in=super_entities)
