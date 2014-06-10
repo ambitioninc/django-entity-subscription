@@ -1,9 +1,27 @@
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from django_dynamic_fixture import G
+from django_dynamic_fixture import G, N
 from entity.models import Entity, EntityRelationship
+from mock import patch
 
 from entity_subscription.models import Medium, Source, Subscription, Unsubscribe
+
+
+class SubscriptionManagerMediumsSubscribedTest(TestCase):
+    @patch('entity_subscription.models.SubscriptionManager._mediums_subscribed_individual')
+    def test_individual(self, subscribed_mock):
+        source = N(Source)
+        entity = N(Entity)
+        Subscription.objects.mediums_subscribed(source, entity)
+        self.assertEqual(len(subscribed_mock.mock_calls), 1)
+
+    @patch('entity_subscription.models.SubscriptionManager._mediums_subscribed_group')
+    def test_group(self, subscribed_mock):
+        source = N(Source)
+        entity = N(Entity)
+        ct = N(ContentType)
+        Subscription.objects.mediums_subscribed(source, entity, ct)
+        self.assertEqual(len(subscribed_mock.mock_calls), 1)
 
 
 class SubscriptionManagerMediumsSubscribedIndividualTest(TestCase):
