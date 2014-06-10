@@ -5,7 +5,19 @@ from entity.models import Entity
 
 
 class SubscriptionManager(models.Manager):
-    def mediums_subscribed(self, source, entity):
+    def mediums_subscribed(self, source, entity, subentity_type=None):
+        if subentity_type is None:
+            return self._mediums_subscribed_individual(source, entity)
+        else:
+            return self._mediums_subscribed_group(source, entity, subentity_type)
+
+    def is_subscribed(self, source, medium, entity, subentity_type=None):
+        if subentity_type is None:
+            return self._is_subscribed_individual(source, mediusm, entity)
+        else:
+            return self._is_subscribed_group(source, medium, entity, subentity_type)
+
+    def _mediums_subscribed_individual(self, source, entity):
         super_entities = entity.get_super_entities()
         is_entity = Q(subentity_type__isnull=True, entity=entity)
         in_subentities = Q(subentity_type=entity.entity_type, entity__in=super_entities)
@@ -22,6 +34,15 @@ class SubscriptionManager(models.Manager):
             .values_list('medium', flat=True)
         )
         return Medium.objects.filter(id__in=subscribed_mediums - unsubscribed_mediums)
+
+    def _mediums_subscribed_group(self, source, entity, subentity_type):
+        pass
+
+    def _is_subscribed_individual(self, source, medium, entity):
+        pass
+
+    def _is_subscribed_group(self, source, medium, entity, subentity_type):
+        pass
 
 
 class Subscription(models.Model):
