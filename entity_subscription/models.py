@@ -71,10 +71,12 @@ class SubscriptionManager(models.Manager):
         ).values_list('super_entity')
         is_subscribed = self.filter(
             source=source,
+            medium=medium,
             subentity_type=subentity_type,
             entity__in=related_super_entities
         ).exists()
         return is_subscribed
+
 
 class Subscription(models.Model):
     """Include groups of entities to subscriptions.
