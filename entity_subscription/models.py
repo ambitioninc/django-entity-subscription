@@ -13,7 +13,7 @@ class SubscriptionManager(models.Manager):
 
     def is_subscribed(self, source, medium, entity, subentity_type=None):
         if subentity_type is None:
-            return self._is_subscribed_individual(source, mediusm, entity)
+            return self._is_subscribed_individual(source, medium, entity)
         else:
             return self._is_subscribed_group(source, medium, entity, subentity_type)
 

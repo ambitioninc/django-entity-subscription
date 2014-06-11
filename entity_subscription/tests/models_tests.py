@@ -26,6 +26,27 @@ class SubscriptionManagerMediumsSubscribedTest(TestCase):
         self.assertEqual(len(subscribed_mock.mock_calls), 1)
 
 
+class SubscriptionManagerIsSubscribedTest(TestCase):
+    # We just test that this dispatches correctly. We test the
+    # dispatched functions more carefully.
+    @patch('entity_subscription.models.SubscriptionManager._is_subscribed_individual')
+    def test_individual(self, subscribed_mock):
+        source = N(Source)
+        medium = N(Medium)
+        entity = N(Entity)
+        Subscription.objects.is_subscribed(source, medium, entity)
+        self.assertEqual(len(subscribed_mock.mock_calls), 1)
+
+    @patch('entity_subscription.models.SubscriptionManager._is_subscribed_group')
+    def test_group(self, subscribed_mock):
+        source = N(Source)
+        medium = N(Medium)
+        entity = N(Entity)
+        ct = N(ContentType)
+        Subscription.objects.is_subscribed(source, medium, entity, ct)
+        self.assertEqual(len(subscribed_mock.mock_calls), 1)
+
+
 class SubscriptionManagerMediumsSubscribedIndividualTest(TestCase):
     def setUp(self):
         self.medium_1 = G(Medium)
