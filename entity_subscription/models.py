@@ -98,6 +98,13 @@ class Subscription(models.Model):
     objects = SubscriptionManager()
 
 
+class UnsubscribeManager(models.Manager):
+    def is_unsubscribed(self, source, medium, entity):
+        """Return True if the entity is unsubscribed
+        """
+        return self.filter(source=source, medium=medium, entity=entity).exists()
+
+
 class Unsubscribe(models.Model):
     """Individual entity-level unsubscriptions.
 
@@ -107,6 +114,8 @@ class Unsubscribe(models.Model):
     entity = models.ForeignKey(Entity)
     medium = models.ForeignKey('Medium')
     source = models.ForeignKey('Source')
+
+    objects = UnsubscribeManager()
 
 
 class Medium(models.Model):

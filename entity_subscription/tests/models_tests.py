@@ -258,3 +258,16 @@ class SubscriptionManagerIsSubscribedGroupTest(TestCase):
             source=self.source_1, medium=self.medium_1, entity=self.entity_3, subentity_type=self.ct_2
         )
         self.assertFalse(is_subscribed)
+
+
+class UnsubscribeManagerIsUnsubscribed(TestCase):
+    def test_is_unsubscribed(self):
+        entity, source, medium = G(Entity), G(Source), G(Medium)
+        G(Unsubscribe, entity=entity, source=source, medium=medium)
+        is_unsubscribed = Unsubscribe.objects.is_unsubscribed(source, medium, entity)
+        self.assertTrue(is_unsubscribed)
+
+    def test_is_not_unsubscribed(self):
+        entity, source, medium = G(Entity), G(Source), G(Medium)
+        is_unsubscribed = Unsubscribe.objects.is_unsubscribed(source, medium, entity)
+        self.assertFalse(is_unsubscribed)
