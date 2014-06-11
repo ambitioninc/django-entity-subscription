@@ -191,3 +191,24 @@ class SubscriptionManagerIsSubScribedIndividualTest(TestCase):
             self.source_1, self.medium_1, self.entity_1
         )
         self.assertFalse(is_subscribed)
+
+
+class SubscriptionManagerIsSubscribedGroupTest(TestCase):
+    def setUp(self):
+        self.ct = G(ContentType)
+        self.medium_1 = G(Medium)
+        self.medium_2 = G(Medium)
+        self.source_1 = G(Source)
+        self.source_2 = G(Source)
+        self.entity_1 = G(Entity, entity_type=self.ct)    # sub
+        self.entity_2 = G(Entity)                         # super
+        self.entity_3 = G(Entity)                         # super
+        G(EntityRelationship, sub_entity=self.entity_1, super_entity=self.entity_2)
+        G(EntityRelationship, sub_entity=self.entity_1, super_entity=self.entity_3)
+
+    def test_one_subscription_matches_across_supers(self):
+        G(Subscription, entity=self.entity_2, medium=self.medium_1, source=self.source_1, subentity_type=self.ct)
+        is_subscribed = Subscription.objects._is_subscribed_group(
+            source=self.source_1, medium=self.medium_1, entity=self.entity_3, subentity_type=self.ct
+        )
+        self.assertTrue(is_subscribed)
