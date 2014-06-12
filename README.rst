@@ -30,6 +30,13 @@ of this library already has some idea of what notifications are going
 to be sent, and what delivery methods are going to be used to send the
 notifications.
 
+Once subscription information is stored in those models, the
+``entity_subscription`` app also provides some methods to make it
+easier to reason about and act on the stored subscriptions.
+
+- ``Subscription.objects.mediums_subscribed``
+- ``Subscription.objects.is_subscribed``
+
 Sources and Mediums
 --------------------------------------------------
 
@@ -224,3 +231,98 @@ where a Subscription object is made for each single entity that wishes
 to opt in (that is, a ``Subscription`` object with a
 ``subentity_type=None``). This may make more sense then subscribing
 large groups to this notification and having most of them unsubscribe.
+
+
+Checking Subscriptions
+--------------------------------------------------
+
+Once your sites subscriptions are stored as shown above, you will want
+to use those subscriptions to decide to deliver (or not deliver)
+notifications. The ``entity_subscription`` app provides a couple
+methods to make it easier to find who is subscribed to what.
+
+The ``SubscriptionManager``
+  The following methods are available from the manager of the
+  ``Subscription`` model.
+
+  ``mediums_subscribed(source, entity, subentity_type=None)``
+    Return a queryset of all the mediums the given ``entity`` is
+    subscribed to, for the given ``source``.
+
+    If the optional ``subentity_type`` parameter is given, return
+    *every* medium that any of the given ``entity``'s sub-entities, of
+    the given type, is subscribed to.
+
+  ``is_subscribed(source, medium, entity, subentity_type=None)``
+    Return a Boolean, indicating if the entity is subscribed to the
+    given ``source`` on the given ``medium``.
+
+    If the optional ``subentity_type`` parameter is not ``None``,
+    return ``True`` if *any* of the ``entity``'s sub-entities, of the
+    given type, are subscribed to the given ``source`` on the given
+    ``medium``.
+
+In the common case, checking for subscriptions involves looking at the
+mediums a single entity is subscribed to. In this case both
+``mediums_subscribed`` and ``is_subscribed`` should behave exactly as
+expected. Their exact behavior is described in more detail below, in
+the section "Checking if an individual entity is subscribed".
+
+The implications of including a ``subentity_type`` argument are
+somewhat more subtle. These implications are described in more detail
+below, in the section "Checking if anyone in a group is subscribed".
+
+
+Checking if an individual entity is subscribed
+``````````````````````````````````````````````````
+
+Before sending notifications to users, your application wants to make
+sure that it's sending those notifications to users who have been
+included through a subscription, and not excluded themselves by
+unsubscribing.
+
+To check the subscription status of a single entity, simply call
+``mediums_subscribed`` if you want a list of all the mediums an entity
+is subscribed to, for a given source, or call ``is_subscribed`` if you
+want to check if that entity is subscribed to a particular medium for
+a given source. When checking the subscription status of a single
+entity, the ``subentity_type`` argument should be left as ``None``.
+
+When ``mediums_subscribed`` or ``is_subscribed`` are called without a
+``subentity_type`` argument, the behavior of these methods is
+straightforward. They will return a medium, or return true for that
+medium, only if:
+
+1. The entity is part of a individual subscription, or is part of a
+group subscription for the given source.
+
+2. The entity is not unsubscribed from that source and medium.
+
+Once you have checked that an individual entity is subscribed to a
+given source/medium combination, you can be confident in delivering
+that notification.
+
+
+Checking if anyone in a group is subscribed
+``````````````````````````````````````````````````
+
+In some cases, your application may have an event that applies to a
+group of individuals, and you may wish to check if any of those
+individuals are subscribed to receive notifications for that
+event.
+
+Both ``mediums_subscribed`` and ``is_subscribed`` can also take an
+optional parameter ``subentity_type`` which will change their
+behavior fairly significantly. In this case, the provided argument,
+``entity``, is assumed to be a super-entity, and these functions
+return values based on what *any* of the sub entities are subscribed
+to.
+
+So, passing in a super-entity, and subentity-type to either
+``mediums_subscribed`` or ``is_subscribed`` can provide a useful start
+for delivering notifications.
+
+Note that this is only an *approximation* of what individuals in the
+group are subscribed to. Before actually delivering a notification
+to any subentity, the application must check that each user is
+actually subscribed to receive that notification.
