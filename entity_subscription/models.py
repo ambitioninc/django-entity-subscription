@@ -21,19 +21,13 @@ class SubscriptionManager(models.Manager):
         super_entities = entity.get_super_entities()
         entity_is_subscribed = Q(subentity_type__isnull=True, entity=entity)
         super_entity_is_subscribed = Q(subentity_type=entity.entity_type, entity__in=super_entities)
-        subscribed_mediums = set(
-            self
-            .filter(entity_is_subscribed | super_entity_is_subscribed, source=source)
-            .select_related('medium')
-            .values_list('medium', flat=True)
-        )
-        unsubscribed_mediums = set(
-            Unsubscribe.objects
-            .filter(entity=entity, source=source)
-            .select_related('medium')
-            .values_list('medium', flat=True)
-        )
-        return Medium.objects.filter(id__in=subscribed_mediums - unsubscribed_mediums)
+        subscribed_mediums = self.filter(
+            entity_is_subscribed | super_entity_is_subscribed, source=source
+        ).select_related('medium').values_list('medium', flat=True)
+        unsubscribed_mediums = Unsubscribe.objects.filter(
+            entity=entity, source=source
+        ).select_related('medium').values_list('medium', flat=True)
+        return Medium.objects.filter(id__in=subscribed_mediums).exclude(id__in=unsubscribed_mediums)
 
     def _mediums_subscribed_group(self, source, entity, subentity_type):
         # For every subentity, if that subentity is part of a
@@ -41,12 +35,9 @@ class SubscriptionManager(models.Manager):
         related_super_entities = EntityRelationship.objects.filter(
             sub_entity__in=entity.get_sub_entities().is_any_type(subentity_type)
         ).values_list('super_entity')
-        group_subscribed_mediums = set(
-            self
-            .filter(source=source, subentity_type=subentity_type, entity__in=related_super_entities)
-            .select_related('medium')
-            .values_list('medium', flat=True)
-        )
+        group_subscribed_mediums = self.filter(
+            source=source, subentity_type=subentity_type, entity__in=related_super_entities
+        ).select_related('medium').values_list('medium', flat=True)
         return Medium.objects.filter(id__in=group_subscribed_mediums)
 
     def _is_subscribed_individual(self, source, medium, entity):
