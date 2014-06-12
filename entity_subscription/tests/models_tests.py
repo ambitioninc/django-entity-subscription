@@ -271,3 +271,44 @@ class UnsubscribeManagerIsUnsubscribed(TestCase):
         entity, source, medium = G(Entity), G(Source), G(Medium)
         is_unsubscribed = Unsubscribe.objects.is_unsubscribed(source, medium, entity)
         self.assertFalse(is_unsubscribed)
+
+
+class NumberOfQueriesTests(TestCase):
+    def test_query_count(self):
+        ct = G(ContentType)
+        e0 = G(Entity, entity_type = ct) # sub
+        e1 = G(Entity, entity_type = ct) # sub
+        e2 = G(Entity)                   # super
+        e3 = G(Entity)                   # super
+        e4 = G(Entity)                   # super
+        e5 = G(Entity)                   # super
+        e6 = G(Entity)                   # super
+        m1, m2, m3, m4, m5 = G(Medium), G(Medium), G(Medium), G(Medium), G(Medium)
+        s1, s2 = G(Source), G(Source)
+        G(EntityRelationship, sub_entity=e1, super_entity=e2, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e1, super_entity=e3, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e1, super_entity=e4, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e1, super_entity=e5, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e1, super_entity=e6, subentity_type=ct)
+
+        G(EntityRelationship, sub_entity=e0, super_entity=e2, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e0, super_entity=e3, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e0, super_entity=e4, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e0, super_entity=e5, subentity_type=ct)
+        G(EntityRelationship, sub_entity=e0, super_entity=e6, subentity_type=ct)
+
+        G(Subscription, entity=e2, subentity_type=ct, source=s1, medium=m1)
+        G(Subscription, entity=e3, subentity_type=ct, source=s1, medium=m2)
+        G(Subscription, entity=e4, subentity_type=ct, source=s1, medium=m3)
+        G(Subscription, entity=e5, subentity_type=ct, source=s1, medium=m4)
+        G(Subscription, entity=e6, subentity_type=ct, source=s1, medium=m5)
+
+        G(Subscription, entity=e2, subentity_type=ct, source=s2, medium=m1)
+        G(Subscription, entity=e3, subentity_type=ct, source=s2, medium=m2)
+        G(Subscription, entity=e4, subentity_type=ct, source=s2, medium=m3)
+        G(Subscription, entity=e5, subentity_type=ct, source=s2, medium=m4)
+        G(Subscription, entity=e6, subentity_type=ct, source=s2, medium=m5)
+
+        with self.assertNumQueries(1):
+            mediums = Subscription.objects._mediums_subscribed_individual(source=s1, entity=e1)
+            list(mediums)
