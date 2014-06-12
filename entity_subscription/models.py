@@ -32,8 +32,11 @@ class SubscriptionManager(models.Manager):
     def _mediums_subscribed_group(self, source, entity, subentity_type):
         # For every subentity, if that subentity is part of a
         # subscription, include the medium for that subscription.
+        all_group_sub_entities = entity.sub_relationships.select_related('sub_entity').filter(
+            sub_entity__entity_type=subentity_type
+        ).values_list('sub_entity')
         related_super_entities = EntityRelationship.objects.filter(
-            sub_entity__in=entity.get_sub_entities().is_any_type(subentity_type)
+            sub_entity__in=all_group_sub_entities
         ).values_list('super_entity')
         group_subscribed_mediums = self.filter(
             source=source, subentity_type=subentity_type, entity__in=related_super_entities
@@ -57,8 +60,11 @@ class SubscriptionManager(models.Manager):
         return is_subscribed and not unsubscribed
 
     def _is_subscribed_group(self, source, medium, entity, subentity_type):
+        all_group_sub_entities = entity.sub_relationships.select_related('sub_entity').filter(
+            sub_entity__entity_type=subentity_type
+        ).values_list('sub_entity')
         related_super_entities = EntityRelationship.objects.filter(
-            sub_entity__in=entity.get_sub_entities().is_any_type(subentity_type)
+            sub_entity__in=all_group_sub_entities,
         ).values_list('super_entity')
         is_subscribed = self.filter(
             source=source,

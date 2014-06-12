@@ -276,8 +276,8 @@ class UnsubscribeManagerIsUnsubscribed(TestCase):
 class NumberOfQueriesTests(TestCase):
     def test_query_count(self):
         ct = G(ContentType)
-        e0 = G(Entity, entity_type = ct) # sub
-        e1 = G(Entity, entity_type = ct) # sub
+        e0 = G(Entity, entity_type=ct)   # sub
+        e1 = G(Entity, entity_type=ct)   # sub
         e2 = G(Entity)                   # super
         e3 = G(Entity)                   # super
         e4 = G(Entity)                   # super
@@ -312,3 +312,13 @@ class NumberOfQueriesTests(TestCase):
         with self.assertNumQueries(1):
             mediums = Subscription.objects._mediums_subscribed_individual(source=s1, entity=e1)
             list(mediums)
+
+        with self.assertNumQueries(1):
+            mediums = Subscription.objects._mediums_subscribed_group(source=s1, entity=e6, subentity_type=ct)
+            list(mediums)
+
+        with self.assertNumQueries(2):
+            Subscription.objects._is_subscribed_individual(source=s1, medium=m1, entity=e1)
+
+        with self.assertNumQueries(1):
+            Subscription.objects._is_subscribed_group(source=s1, medium=m1, entity=e6, subentity_type=ct)
