@@ -345,9 +345,10 @@ definitely recieve the notification.
    entities = [entity_1, entity_2, entity_3]
    subscribed_entities = Subscription.objects.filter_not_subscribed(source, medium, entities)
 
-This method takes into account all possible group subscriptions the
-entities may belong to, as well as removing entities that are
-unsubscribed from these notifications.
+This method returns a queryset of entities to be notified. It takes
+into account all possible group subscriptions the entities may belong
+to, as well as removing entities that are unsubscribed from these
+notifications.
 
 It does, require, however, that all the entities provided are of the
 same ``entity_type``.
