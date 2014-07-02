@@ -284,8 +284,8 @@ class SubscriptionFilterNotSubscribedTest(TestCase):
         G(Subscription, entity=self.super_e1, source=self.source, medium=self.medium, subentity_type=self.sub_ct)
         entities = [self.sub_e1, self.sub_e3, self.ind_e1, self.ind_e2]
         filtered_entities = Subscription.objects.filter_not_subscribed(self.source, self.medium, entities)
-        expected_entities = [self.sub_e1, self.sub_e2]
-        self.assertEqual(filtered_entities, expected_entities)
+        expected_entity_ids = [self.sub_e1.id, self.ind_e1.id]
+        self.assertEqual(set(filtered_entities.values_list('id', flat=True)), set(expected_entity_ids))
 
 
 class UnsubscribeManagerIsUnsubscribed(TestCase):

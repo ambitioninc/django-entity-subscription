@@ -113,15 +113,15 @@ class SubscriptionManager(models.Manager):
 
         individual_subs = self.filter(
             source=source, medium=medium, subentity_type=None
-        ).values_list('entity')
+        ).values_list('entity', flat=True)
 
         relevant_unsubscribes = Unsubscribe.objects.filter(
             source=source, medium=medium, entity__in=entities
-        ).values_list('entity')
+        ).values_list('entity', flat=True)
 
         subscribed_entities = Entity.objects.filter(
-            Q(entity_id__in=group_subscribed_entities) | Q(entity_id__in=individual_subs)
-        ).exclude(entity_id__in=relevant_unsubscribes)
+            Q(pk__in=group_subscribed_entities) | Q(pk__in=individual_subs)
+        ).exclude(pk__in=relevant_unsubscribes)
 
         return subscribed_entities
 
