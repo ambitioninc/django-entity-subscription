@@ -364,3 +364,7 @@ class NumberOfQueriesTests(TestCase):
 
         with self.assertNumQueries(1):
             Subscription.objects._is_subscribed_group(source=s1, medium=m1, entity=e6, subentity_type=ct)
+
+        with self.assertNumQueries(1):
+            entities = [e0, e1]
+            list(Subscription.objects.filter_not_subscribed(source=s1, medium=m1, entities=entities))
