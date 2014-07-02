@@ -326,3 +326,28 @@ Note that this is only an *approximation* of what individuals in the
 group are subscribed to. Before actually delivering a notification
 to any subentity, the application must check that each user is
 actually subscribed to receive that notification.
+
+
+Filtering entities based on subscriptions
+``````````````````````````````````````````````````
+
+Given some number of entities, that may or may not be subscribed to
+notifications from a given source and medium, it could be complicated
+to determine all the possible entity relationships, and the relevant
+subscriptions and unsubscriptions to check exactly which of those
+entities should be notified. The entity-subscription framework
+provides a method, ``Subscription.objects.filter_not_subscribed`` that
+will take the list of entities and return only those that should
+definitely recieve the notification.
+
+.. code:: Python
+
+   entities = [entity_1, entity_2, entity_3]
+   subscribed_entities = Subscription.objects.filter_not_subscribed(source, medium, entities)
+
+This method takes into account all possible group subscriptions the
+entities may belong to, as well as removing entities that are
+unsubscribed from these notifications.
+
+It does, require, however, that all the entities provided are of the
+same ``entity_type``.
