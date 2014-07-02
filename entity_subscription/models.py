@@ -74,6 +74,57 @@ class SubscriptionManager(models.Manager):
         else:
             return self._is_subscribed_group(source, medium, entity, subentity_type)
 
+    def filter_not_subscribed(self, source, medium, entities):
+        """Return only the entities subscribed to the source and medium.
+
+        Args:
+
+          source - A `Source` object. Check that there is a
+          subscription for this source and the given medium.
+
+          medium - A `Medium` object. Check that there is a
+          subscription for this medium and the given source
+
+          entities - An iterable of `Entity` objects. The iterable
+          will be filtered down to only those with a subscription to
+          the source and medium. All entities in this iterable must be
+          of the same type.
+
+        Raises:
+
+          ValueError - if not all entities provided are of the same
+          type.
+
+        Returns:
+
+          A queryset of entities which are in the initially provided
+          list and are subscribed to the source and medium.
+
+        """
+        entity_type = entities[0].entity_type
+        if not all(e.entity_type == entity_type for e in entities):
+            msg = 'All entities provided must be of the same type.'
+            raise ValueError(msg)
+
+        group_subs = self.filter(source=source, medium=medium, subentity_type=entity_type)
+        group_subscribed_entities = EntityRelationship.objects.filter(
+            sub_entity__in=entities, super_entity__in=group_subs.values('entity')
+        ).values_list('sub_entity', flat=True)
+
+        individual_subs = self.filter(
+            source=source, medium=medium, subentity_type=None
+        ).values_list('entity')
+
+        relevant_unsubscribes = Unsubscribe.objects.filter(
+            source=source, medium=medium, entity__in=entities
+        ).values_list('entity')
+
+        subscribed_entities = Entity.objects.filter(
+            Q(entity_id__in=group_subscribed_entities) | Q(entity_id__in=individual_subs)
+        ).exclude(entity_id__in=relevant_unsubscribes)
+
+        return subscribed_entities
+
     def _mediums_subscribed_individual(self, source, entity):
         """Return the mediums a single entity is subscribed to for a source.
         """

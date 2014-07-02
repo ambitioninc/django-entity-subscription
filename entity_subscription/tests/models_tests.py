@@ -260,6 +260,34 @@ class SubscriptionManagerIsSubscribedGroupTest(TestCase):
         self.assertFalse(is_subscribed)
 
 
+class SubscriptionFilterNotSubscribedTest(TestCase):
+    def setUp(self):
+        self.super_ct = G(ContentType)
+        self.sub_ct = G(ContentType)
+        self.super_e1 = G(Entity, entity_type=self.super_ct)
+        self.super_e2 = G(Entity, entity_type=self.super_ct)
+        self.sub_e1 = G(Entity, entity_type=self.sub_ct)
+        self.sub_e2 = G(Entity, entity_type=self.sub_ct)
+        self.sub_e3 = G(Entity, entity_type=self.sub_ct)
+        self.sub_e4 = G(Entity, entity_type=self.sub_ct)
+        self.ind_e1 = G(Entity, entity_type=self.sub_ct)
+        self.ind_e2 = G(Entity, entity_type=self.sub_ct)
+        self.medium = G(Medium)
+        self.source = G(Source)
+        G(EntityRelationship, sub_entity=self.sub_e1, super_entity=self.super_e1)
+        G(EntityRelationship, sub_entity=self.sub_e2, super_entity=self.super_e1)
+        G(EntityRelationship, sub_entity=self.sub_e3, super_entity=self.super_e2)
+        G(EntityRelationship, sub_entity=self.sub_e4, super_entity=self.super_e2)
+
+    def test_group_and_individual_subscription(self):
+        G(Subscription, entity=self.ind_e1, source=self.source, medium=self.medium, subentity_type=None)
+        G(Subscription, entity=self.super_e1, source=self.source, medium=self.medium, subentity_type=self.sub_ct)
+        entities = [self.sub_e1, self.sub_e3, self.ind_e1, self.ind_e2]
+        filtered_entities = Subscription.objects.filter_not_subscribed(self.source, self.medium, entities)
+        expected_entities = [self.sub_e1, self.sub_e2]
+        self.assertEqual(filtered_entities, expected_entities)
+
+
 class UnsubscribeManagerIsUnsubscribed(TestCase):
     def test_is_unsubscribed(self):
         entity, source, medium = G(Entity), G(Source), G(Medium)
