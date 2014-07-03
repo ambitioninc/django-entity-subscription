@@ -101,12 +101,12 @@ class SubscriptionManager(models.Manager):
           list and are subscribed to the source and medium.
 
         """
-        entity_type = entities[0].entity_type
-        if not all(e.entity_type == entity_type for e in entities):
+        entity_type_id = entities[0].entity_type_id
+        if not all(e.entity_type_id == entity_type_id for e in entities):
             msg = 'All entities provided must be of the same type.'
             raise ValueError(msg)
 
-        group_subs = self.filter(source=source, medium=medium, subentity_type=entity_type)
+        group_subs = self.filter(source=source, medium=medium, subentity_type_id=entity_type_id)
         group_subscribed_entities = EntityRelationship.objects.filter(
             sub_entity__in=entities, super_entity__in=group_subs.values('entity')
         ).values_list('sub_entity', flat=True)
