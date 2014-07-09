@@ -120,7 +120,8 @@ class SubscriptionManager(models.Manager):
         ).values_list('entity', flat=True)
 
         subscribed_entities = Entity.objects.filter(
-            Q(pk__in=group_subscribed_entities) | Q(pk__in=individual_subs)
+            Q(pk__in=group_subscribed_entities) | Q(pk__in=individual_subs),
+            id__in=[e.id for e in entities]
         ).exclude(pk__in=relevant_unsubscribes)
 
         return subscribed_entities

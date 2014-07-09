@@ -296,6 +296,13 @@ class SubscriptionFilterNotSubscribedTest(TestCase):
         expected_entity_ids = [self.sub_e2.id, self.ind_e1.id]
         self.assertEqual(set(filtered_entities.values_list('id', flat=True)), set(expected_entity_ids))
 
+    def test_entities_not_passed_in_filtered(self):
+        G(Subscription, entity=self.ind_e1, source=self.source, medium=self.medium, subentity_type=None)
+        G(Subscription, entity=self.super_e1, source=self.source, medium=self.medium, subentity_type=self.sub_ct)
+        entities = list(self.super_e1.get_sub_entities().is_any_type(self.sub_ct))
+        filtered_entities = Subscription.objects.filter_not_subscribed(self.source, self.medium, entities)
+        self.assertEqual(set(filtered_entities), set(entities))
+
     def test_different_entity_types_raises_error(self):
         entities = [self.sub_e1, self.super_e1]
         with self.assertRaises(ValueError):
