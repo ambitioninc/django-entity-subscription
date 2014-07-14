@@ -378,12 +378,26 @@ class NumberOfQueriesTests(TestCase):
 
 
 class UnicodeMethodTests(TestCase):
+    def setUp(self):
+        self.entity = G(
+            Entity, entity_meta={'name': 'Entity Test'}
+        )
+        self.medium = G(
+            Medium, name='test', display_name='Test', description='A test medium.'
+        )
+        self.source = G(
+            Source, name='test', display_name='Test', description='A test source.'
+        )
+
+    def test_unsubscribe_unicode(self):
+        unsub = G(Unsubscribe, entity=self.entity, medium=self.medium, source=self.source)
+        expected_unicode = 'Entity Test from Test by Test'
+        self.assertEqual(unsub.__unicode__(), expected_unicode)
+
     def test_medium_unicode(self):
-        medium = G(Medium, name='test', display_name='Test', description='A test medium.')
         expected_unicode = 'Test'
-        self.assertEqual(medium.__unicode__(), expected_unicode)
+        self.assertEqual(self.medium.__unicode__(), expected_unicode)
 
     def test_source_unicode(self):
-        source = G(Source, name='test', display_name='Test', description='A test source.')
         expected_unicode = 'Test'
-        self.assertEqual(source.__unicode__(), expected_unicode)
+        self.assertEqual(self.source.__unicode__(), expected_unicode)

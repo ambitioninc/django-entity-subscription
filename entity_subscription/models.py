@@ -229,6 +229,13 @@ class Unsubscribe(models.Model):
 
     objects = UnsubscribeManager()
 
+    def __unicode__(self):
+        s = "{entity} from {source} by {email}"
+        entity = self.entity.__unicode__()
+        source = self.source.__unicode__()
+        medium = self.medium.__unicode__()
+        return s.format(entity=entity, source=source, medium=medium)
+
 
 class Medium(models.Model):
     """A method of actually delivering the notification to users.
