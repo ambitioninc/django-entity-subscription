@@ -242,6 +242,9 @@ class Medium(models.Model):
     display_name = models.CharField(max_length=64)
     description = models.TextField()
 
+    def __unicode__(self):
+        return self.display_name
+
 
 class Source(models.Model):
     """A category of where notifications originate from.

@@ -378,6 +378,11 @@ class NumberOfQueriesTests(TestCase):
 
 
 class UnicodeMethodTests(TestCase):
+    def test_medium_unicode(self):
+        medium = G(Medium, name='test', display_name='Test', description='A test medium.')
+        expected_unicode = 'Test'
+        self.assertEqual(medium.__unicode__(), expected_unicode)
+
     def test_source_unicode(self):
         source = G(Source, name='test', display_name='Test', description='A test source.')
         expected_unicode = 'Test'
