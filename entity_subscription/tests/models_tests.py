@@ -375,3 +375,10 @@ class NumberOfQueriesTests(TestCase):
         with self.assertNumQueries(1):
             entities = [e0, e1]
             list(Subscription.objects.filter_not_subscribed(source=s1, medium=m1, entities=entities))
+
+
+class UnicodeMethodTests(TestCase):
+    def test_source_unicode(self):
+        source = G(Source, name='test', display_name='Test', description='A test source.')
+        expected_unicode = 'Test'
+        self.assertEqual(source.__unicode__(), expected_unicode)
