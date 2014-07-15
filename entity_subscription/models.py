@@ -209,6 +209,13 @@ class Subscription(models.Model):
 
     objects = SubscriptionManager()
 
+    def __unicode__(self):
+        s = "{entity} to {source} by {medium}"
+        entity = self.entity.__unicode__()
+        source = self.source.__unicode__()
+        medium = self.medium.__unicode__()
+        return s.format(entity=entity, source=source, medium=medium)
+
 
 class UnsubscribeManager(models.Manager):
     def is_unsubscribed(self, source, medium, entity):
@@ -229,6 +236,13 @@ class Unsubscribe(models.Model):
 
     objects = UnsubscribeManager()
 
+    def __unicode__(self):
+        s = "{entity} from {source} by {medium}"
+        entity = self.entity.__unicode__()
+        source = self.source.__unicode__()
+        medium = self.medium.__unicode__()
+        return s.format(entity=entity, source=source, medium=medium)
+
 
 class Medium(models.Model):
     """A method of actually delivering the notification to users.
@@ -242,6 +256,9 @@ class Medium(models.Model):
     display_name = models.CharField(max_length=64)
     description = models.TextField()
 
+    def __unicode__(self):
+        return self.display_name
+
 
 class Source(models.Model):
     """A category of where notifications originate from.
@@ -254,3 +271,6 @@ class Source(models.Model):
     name = models.CharField(max_length=64, unique=True)
     display_name = models.CharField(max_length=64)
     description = models.TextField()
+
+    def __unicode__(self):
+        return self.display_name
