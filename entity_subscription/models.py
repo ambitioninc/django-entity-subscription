@@ -230,7 +230,7 @@ class Unsubscribe(models.Model):
     objects = UnsubscribeManager()
 
     def __unicode__(self):
-        s = "{entity} from {source} by {email}"
+        s = "{entity} from {source} by {medium}"
         entity = self.entity.__unicode__()
         source = self.source.__unicode__()
         medium = self.medium.__unicode__()
