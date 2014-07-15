@@ -389,6 +389,11 @@ class UnicodeMethodTests(TestCase):
             Source, name='test', display_name='Test', description='A test source.'
         )
 
+    def test_subscription_unicode(self):
+        sub = G(Subscription, entity=self.entity, medium=self.medium, source=self.source)
+        expected_unicode = 'Entity Test to Test by Test'
+        self.assertEqual(sub.__unicode__(), expected_unicode)
+
     def test_unsubscribe_unicode(self):
         unsub = G(Unsubscribe, entity=self.entity, medium=self.medium, source=self.source)
         expected_unicode = 'Entity Test from Test by Test'

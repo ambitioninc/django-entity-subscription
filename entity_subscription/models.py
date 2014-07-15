@@ -209,6 +209,13 @@ class Subscription(models.Model):
 
     objects = SubscriptionManager()
 
+    def __unicode__(self):
+        s = "{entity} to {source} by {medium}"
+        entity = self.entity.__unicode__()
+        source = self.source.__unicode__()
+        medium = self.medium.__unicode__()
+        return s.format(entity=entity, source=source, medium=medium)
+
 
 class UnsubscribeManager(models.Manager):
     def is_unsubscribed(self, source, medium, entity):
