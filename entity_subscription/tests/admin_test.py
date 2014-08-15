@@ -2,7 +2,7 @@ from django.contrib.admin.sites import AdminSite
 from django.test import TestCase
 
 from entity_subscription import admin
-from entity_subscription.models import Medium, Source, Subscription, Unsubscribe
+from entity_subscription.models import Medium, Action, Subscription, Unsubscribe
 
 
 class AdminTest(TestCase):
@@ -11,6 +11,6 @@ class AdminTest(TestCase):
 
     def test_all_can_be_called(self):
         admin.MediumAdmin(Medium, self.site)
-        admin.SourceAdmin(Source, self.site)
+        admin.ActionAdmin(Action, self.site)
         admin.SubscriptionAdmin(Subscription, self.site)
         admin.UnsubscribeAdmin(Unsubscribe, self.site)

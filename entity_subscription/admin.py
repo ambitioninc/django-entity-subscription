@@ -1,25 +1,25 @@
 from django.contrib import admin
 
-from entity_subscription.models import Medium, Source, Subscription, Unsubscribe
+from entity_subscription.models import Medium, Action, Subscription, Unsubscribe
 
 
 class MediumAdmin(admin.ModelAdmin):
     pass
 
 
-class SourceAdmin(admin.ModelAdmin):
+class ActionAdmin(admin.ModelAdmin):
     pass
 
 
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('entity', 'source', 'medium')
+    list_display = ('entity', 'action', 'medium')
 
 
 class UnsubscribeAdmin(admin.ModelAdmin):
-    list_display = ('entity', 'source', 'medium')
+    list_display = ('entity', 'action', 'medium')
 
 
 admin.site.register(Medium, MediumAdmin)
-admin.site.register(Source, SourceAdmin)
+admin.site.register(Action, ActionAdmin)
 admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(Unsubscribe, UnsubscribeAdmin)
