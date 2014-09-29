@@ -1,11 +1,10 @@
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
-from entity import Entity, EntityRelationship
+from entity.models import Entity, EntityRelationship, EntityKind
 
 
 class SubscriptionManager(models.Manager):
-    def mediums_subscribed(self, source, entity, subentity_type=None):
+    def mediums_subscribed(self, source, entity, subentity_kind=None):
         """Return all mediums subscribed to for a source.
 
         Args:
@@ -16,28 +15,28 @@ class SubscriptionManager(models.Manager):
           entity - An `Entity` object. The entity to check
           subscriptions for.
 
-          subentity_type - (Optional) A content_type indicating we're
+          subentity_kind - (Optional) An EntityKind indicating we're
           interested in the mediums subscribed to by all sub-entities
-          of the `entity` argument matching this subentity_type.
+          of the `entity` argument matching this subentity_kind.
 
         Returns:
 
            A queryset of mediums the entity is subscribed to.
 
-           If the subentity_type is None, this queryset has all
+           If the subentity_kind is None, this queryset has all
            unsubscribed mediums filtered out.
 
-           If the subentity_type is not None, this queryset contains
+           If the subentity_kind is not None, this queryset contains
            all mediums that any of the subenties might be subscribed
            to, *without* any unsubscribed mediums filtered out.
 
         """
-        if subentity_type is None:
+        if subentity_kind is None:
             return self._mediums_subscribed_individual(source, entity)
         else:
-            return self._mediums_subscribed_group(source, entity, subentity_type)
+            return self._mediums_subscribed_group(source, entity, subentity_kind)
 
-    def is_subscribed(self, source, medium, entity, subentity_type=None):
+    def is_subscribed(self, source, medium, entity, subentity_kind=None):
         """Return True if subscribed to this medium/source combination.
 
         Args:
@@ -51,28 +50,28 @@ class SubscriptionManager(models.Manager):
           entity - An `Entity` object. The entity to check
           subscriptions for.
 
-          subentity_type - (Optional) A content_type indicating we're
+          subentity_kind - (Optional) An EntityKind indicating we're
           interested in the subscriptions by all sub-entities of the
-          `entity` argument matching this subentity_type.
+          `entity` argument matching this subentity_kind.
 
         Returns:
 
            A boolean indicating if the entity is subscribed to this
            source/medium combination.
 
-           If the subentity_type is None, this boolean takes into
+           If the subentity_kind is None, this boolean takes into
            account whether the entity is unsubscribed.
 
-           If the subentity_type is not None, this boolean indicates
+           If the subentity_kind is not None, this boolean indicates
            that any of the subenties might be subscribed to this
            combination of source/medium, *without* any unsubscriptions
            filtered out.
 
         """
-        if subentity_type is None:
+        if subentity_kind is None:
             return self._is_subscribed_individual(source, medium, entity)
         else:
-            return self._is_subscribed_group(source, medium, entity, subentity_type)
+            return self._is_subscribed_group(source, medium, entity, subentity_kind)
 
     def filter_not_subscribed(self, source, medium, entities):
         """Return only the entities subscribed to the source and medium.
@@ -101,18 +100,18 @@ class SubscriptionManager(models.Manager):
           list and are subscribed to the source and medium.
 
         """
-        entity_type_id = entities[0].entity_type_id
-        if not all(e.entity_type_id == entity_type_id for e in entities):
-            msg = 'All entities provided must be of the same type.'
+        entity_kind_id = entities[0].entity_kind_id
+        if not all(e.entity_kind_id == entity_kind_id for e in entities):
+            msg = 'All entities provided must be of the same kind.'
             raise ValueError(msg)
 
-        group_subs = self.filter(source=source, medium=medium, subentity_type_id=entity_type_id)
+        group_subs = self.filter(source=source, medium=medium, subentity_kind_id=entity_kind_id)
         group_subscribed_entities = EntityRelationship.objects.filter(
             sub_entity__in=entities, super_entity__in=group_subs.values('entity')
         ).values_list('sub_entity', flat=True)
 
         individual_subs = self.filter(
-            source=source, medium=medium, subentity_type=None
+            source=source, medium=medium, subentity_kind=None
         ).values_list('entity', flat=True)
 
         relevant_unsubscribes = Unsubscribe.objects.filter(
@@ -130,8 +129,8 @@ class SubscriptionManager(models.Manager):
         """Return the mediums a single entity is subscribed to for a source.
         """
         super_entities = entity.super_relationships.all().values_list('super_entity')
-        entity_is_subscribed = Q(subentity_type__isnull=True, entity=entity)
-        super_entity_is_subscribed = Q(subentity_type=entity.entity_type, entity__in=super_entities)
+        entity_is_subscribed = Q(subentity_kind__isnull=True, entity=entity)
+        super_entity_is_subscribed = Q(subentity_kind=entity.entity_kind, entity__in=super_entities)
         subscribed_mediums = self.filter(
             entity_is_subscribed | super_entity_is_subscribed, source=source
         ).select_related('medium').values_list('medium', flat=True)
@@ -140,17 +139,17 @@ class SubscriptionManager(models.Manager):
         ).select_related('medium').values_list('medium', flat=True)
         return Medium.objects.filter(id__in=subscribed_mediums).exclude(id__in=unsubscribed_mediums)
 
-    def _mediums_subscribed_group(self, source, entity, subentity_type):
+    def _mediums_subscribed_group(self, source, entity, subentity_kind):
         """Return all the mediums any subentity in a group is subscrbed to.
         """
         all_group_sub_entities = entity.sub_relationships.select_related('sub_entity').filter(
-            sub_entity__entity_type=subentity_type
+            sub_entity__entity_kind=subentity_kind
         ).values_list('sub_entity')
         related_super_entities = EntityRelationship.objects.filter(
             sub_entity__in=all_group_sub_entities
         ).values_list('super_entity')
         group_subscribed_mediums = self.filter(
-            source=source, subentity_type=subentity_type, entity__in=related_super_entities
+            source=source, subentity_kind=subentity_kind, entity__in=related_super_entities
         ).select_related('medium').values_list('medium', flat=True)
         return Medium.objects.filter(id__in=group_subscribed_mediums)
 
@@ -158,8 +157,8 @@ class SubscriptionManager(models.Manager):
         """Return true if an entity is subscribed to that source/medium combo.
         """
         super_entities = entity.super_relationships.all().values_list('super_entity')
-        entity_is_subscribed = Q(subentity_type__isnull=True, entity=entity)
-        super_entity_is_subscribed = Q(subentity_type=entity.entity_type, entity__in=super_entities)
+        entity_is_subscribed = Q(subentity_kind__isnull=True, entity=entity)
+        super_entity_is_subscribed = Q(subentity_kind=entity.entity_kind, entity__in=super_entities)
         is_subscribed = self.filter(
             entity_is_subscribed | super_entity_is_subscribed,
             source=source,
@@ -172,11 +171,11 @@ class SubscriptionManager(models.Manager):
         ).exists()
         return is_subscribed and not unsubscribed
 
-    def _is_subscribed_group(self, source, medium, entity, subentity_type):
+    def _is_subscribed_group(self, source, medium, entity, subentity_kind):
         """Return true if any subentity is subscribed to that source & medium.
         """
         all_group_sub_entities = entity.sub_relationships.select_related('sub_entity').filter(
-            sub_entity__entity_type=subentity_type
+            sub_entity__entity_kind=subentity_kind
         ).values_list('sub_entity')
         related_super_entities = EntityRelationship.objects.filter(
             sub_entity__in=all_group_sub_entities,
@@ -184,7 +183,7 @@ class SubscriptionManager(models.Manager):
         is_subscribed = self.filter(
             source=source,
             medium=medium,
-            subentity_type=subentity_type,
+            subentity_kind=subentity_kind,
             entity__in=related_super_entities
         ).exists()
         return is_subscribed
@@ -199,13 +198,13 @@ class Subscription(models.Model):
     `Unsubscribe` model.
 
     If, however, you want to subscribe an individual entity to a
-    source/medium combination, setting the `subentity_type` field to
+    source/medium combination, setting the `subentity_kind` field to
     None will create an individual subscription.
     """
     medium = models.ForeignKey('Medium')
     source = models.ForeignKey('Source')
     entity = models.ForeignKey(Entity)
-    subentity_type = models.ForeignKey(ContentType, null=True)
+    subentity_kind = models.ForeignKey(EntityKind, null=True)
 
     objects = SubscriptionManager()
 

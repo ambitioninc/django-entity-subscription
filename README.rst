@@ -165,8 +165,7 @@ following is a subscription for all the users in a particular group:
     from my_app.models import MyUser
     from my_app.models import MyGroup
 
-    from django.contrib.contenttypes.models import ContentType
-    from entity.models import Entity
+    from entity.models import Entity, EntityKind
     from entity_subscription.models import Subscription, Source, Medium
 
     super_entity = MyGroup.objects.get(name='product_group')
@@ -174,7 +173,7 @@ following is a subscription for all the users in a particular group:
         medium = Medium.objects.get(name='in_site'),
         source = Source.objects.get(name='new_products'),
         entity = Entity.objects.get_for_obj(super_entity),
-        subentity_type = ContentType.get_for_model(MyUser)
+        subentity_kind = EntityKind.objects.get(name='myuser')
     )
 
 Each ``Subscription`` object stored in the database only subscribes
@@ -229,7 +228,7 @@ If a given notification may only have a few users interested in
 receiving, it may make more sense for it to be an opt-in notification,
 where a Subscription object is made for each single entity that wishes
 to opt in (that is, a ``Subscription`` object with a
-``subentity_type=None``). This may make more sense then subscribing
+``subentity_kind=None``). This may make more sense then subscribing
 large groups to this notification and having most of them unsubscribe.
 
 
@@ -245,19 +244,19 @@ The ``SubscriptionManager``
   The following methods are available from the manager of the
   ``Subscription`` model.
 
-  ``mediums_subscribed(source, entity, subentity_type=None)``
+  ``mediums_subscribed(source, entity, subentity_kind=None)``
     Return a queryset of all the mediums the given ``entity`` is
     subscribed to, for the given ``source``.
 
-    If the optional ``subentity_type`` parameter is given, return
+    If the optional ``subentity_kind`` parameter is given, return
     *every* medium that any of the given ``entity``'s sub-entities, of
-    the given type, is subscribed to.
+    the given ``EntityKind``, is subscribed to.
 
-  ``is_subscribed(source, medium, entity, subentity_type=None)``
+  ``is_subscribed(source, medium, entity, subentity_kind=None)``
     Return a Boolean, indicating if the entity is subscribed to the
     given ``source`` on the given ``medium``.
 
-    If the optional ``subentity_type`` parameter is not ``None``,
+    If the optional ``subentity_kind`` parameter is not ``None``,
     return ``True`` if *any* of the ``entity``'s sub-entities, of the
     given type, are subscribed to the given ``source`` on the given
     ``medium``.
@@ -268,7 +267,7 @@ mediums a single entity is subscribed to. In this case both
 expected. Their exact behavior is described in more detail below, in
 the section "Checking if an individual entity is subscribed".
 
-The implications of including a ``subentity_type`` argument are
+The implications of including a ``subentity_kind`` argument are
 somewhat more subtle. These implications are described in more detail
 below, in the section "Checking if anyone in a group is subscribed".
 
@@ -286,10 +285,10 @@ To check the subscription status of a single entity, simply call
 is subscribed to, for a given source, or call ``is_subscribed`` if you
 want to check if that entity is subscribed to a particular medium for
 a given source. When checking the subscription status of a single
-entity, the ``subentity_type`` argument should be left as ``None``.
+entity, the ``subentity_kind`` argument should be left as ``None``.
 
 When ``mediums_subscribed`` or ``is_subscribed`` are called without a
-``subentity_type`` argument, the behavior of these methods is
+``subentity_kind`` argument, the behavior of these methods is
 straightforward. They will return a medium, or return true for that
 medium, only if:
 
@@ -312,7 +311,7 @@ individuals are subscribed to receive notifications for that
 event.
 
 Both ``mediums_subscribed`` and ``is_subscribed`` can also take an
-optional parameter ``subentity_type`` which will change their
+optional parameter ``subentity_kind`` which will change their
 behavior fairly significantly. In this case, the provided argument,
 ``entity``, is assumed to be a super-entity, and these functions
 return values based on what *any* of the sub entities are subscribed
@@ -351,4 +350,16 @@ to, as well as removing entities that are unsubscribed from these
 notifications.
 
 It does, require, however, that all the entities provided are of the
-same ``entity_type``.
+same ``entity_kind``.
+
+
+Release notes
+``````````````````````````````````````````````````
+
+* 0.4.0
+
+    * Migrated Django Entity Subscription to use the ``EntityKind`` model for specifying
+        different kinds of entities. This was a new addition in Django Entity 1.5. Schema migrations
+        are provided that remove the ``subentity_type`` ``ContentType`` variable from the ``Subscription``
+        model and add the ``subentity_kind`` ``EntityKind`` variable. Note that it is up to the
+        user to write the appropriate data migration for converting entity types to entity kinds.
