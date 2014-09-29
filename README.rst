@@ -361,4 +361,5 @@ Release notes
     * Migrated Django Entity Subscription to use the ``EntityKind`` model for specifying
         different kinds of entities. This was a new addition in Django Entity 1.5. Schema migrations
         are provided that remove the ``subentity_type`` ``ContentType`` variable from the ``Subscription``
-        model and add the ``subentity_kind`` ``EntityKind`` variable.
+        model and add the ``subentity_kind`` ``EntityKind`` variable. Note that it is up to the
+        user to write the appropriate data migration for converting entity types to entity kinds.
